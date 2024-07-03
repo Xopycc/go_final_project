@@ -9,7 +9,7 @@ import (
 	"go-final-project/internal/task"
 )
 
-const limit = 10
+const tasksLimit = 10 // Переименованная константа
 
 type Repository struct {
 	db *sql.DB
@@ -44,7 +44,7 @@ func (r *Repository) TasksGet(t task.Task, search string) ([]task.Task, error) {
 
 	rows, err := r.db.Query(`SELECT * FROM scheduler WHERE title LIKE :search OR comment LIKE :search ORDER BY date ASC LIMIT :limit;`,
 		sql.Named("search", search),
-		sql.Named("limit", limit),
+		sql.Named("limit", tasksLimit),
 	)
 	if err != nil {
 		return []task.Task{}, fmt.Errorf("wrong query to db: %w", err)

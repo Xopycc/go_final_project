@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+const (
+	MinDays = 1
+	MaxDays = 400
+)
+
 func NextDate(now time.Time, startDate string, repeat string) (string, error) {
 
 	repeat = strings.ToLower(strings.TrimSpace(repeat))
@@ -27,8 +32,8 @@ func NextDate(now time.Time, startDate string, repeat string) (string, error) {
 
 	case strings.HasPrefix(repeat, "d"):
 		d, err := strconv.Atoi(strings.TrimSpace(strings.TrimPrefix(repeat, "d ")))
-		if err != nil || d < 1 || d > 400 {
-			return "", fmt.Errorf("%w: invalid days %w", ErrFormat, err)
+		if err != nil || d < MinDays || d > MaxDays {
+			return "", fmt.Errorf("%w: invalid days %v", ErrFormat, err) // %v для вывода err
 		}
 		nextDate = startDt
 		nextDate = nextDate.AddDate(0, 0, d)

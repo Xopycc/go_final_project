@@ -21,7 +21,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db, err := sqlidb.Open("sqlite", "scheduler.db")
+	// Используем значение из конфига для подключения к базе данных
+	db, err := sqlidb.Open("sqlite", cfg.DB)
 	if err != nil {
 		log.Println(err)
 		return
@@ -39,13 +40,14 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.Handle("/", http.FileServer(http.Dir(webDir)))
-	mux.HandleFunc("GET /api/nextdate", api.NextDate)
-	mux.HandleFunc("POST /api/task", api.TaskCreate)
-	mux.HandleFunc("GET /api/tasks", api.GetTasks)
-	mux.HandleFunc("GET /api/task", api.GetTask)
-	mux.HandleFunc("PUT /api/task", api.UpdateTask)
-	mux.HandleFunc("POST /api/task/done", api.TaskDone)
-	mux.HandleFunc("DELETE /api/task", api.TaskDelete)
+	// Исправление маршрутов без HTTP метода (GET, POST, и т.д.)
+	mux.HandleFunc("/api/nextdate", api.NextDate)
+	mux.HandleFunc("/api/task", api.TaskCreate)
+	mux.HandleFunc("/api/tasks", api.GetTasks)
+	mux.HandleFunc("/api/task", api.GetTask)
+	mux.HandleFunc("/api/task", api.UpdateTask)
+	mux.HandleFunc("/api/task/done", api.TaskDone)
+	mux.HandleFunc("/api/task", api.TaskDelete)
 
 	log.Printf("Сервер запущен на порту %s\n", cfg.Port)
 

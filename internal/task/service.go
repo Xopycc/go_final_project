@@ -5,6 +5,9 @@ import (
 	"time"
 )
 
+// Определение константы для магического числа 24
+const TruncateHours = 24
+
 type Repository interface {
 	TaskAdd(t Task) (int, error)
 	TasksGet(t Task, search string) ([]Task, error)
@@ -38,7 +41,7 @@ func (s *Service) Create(tsk Task) (int, error) {
 		}
 		return taskID, nil
 	}
-	now := time.Now().Truncate(24 * time.Hour)
+	now := time.Now().Truncate(TruncateHours * time.Hour) // Изменение: использование константы
 
 	nowText := now.Format(DateFormat)
 	if tsk.Date < nowText {
@@ -90,7 +93,7 @@ func (s *Service) UpdateTask(tsk Task) error {
 		}
 		return nil
 	}
-	now := time.Now().Truncate(24 * time.Hour)
+	now := time.Now().Truncate(TruncateHours * time.Hour) // Изменение: использование константы
 
 	nowText := now.Format(DateFormat)
 	if tsk.Date < nowText {
@@ -118,7 +121,7 @@ func (s *Service) TaskDone(tskID string) error {
 			return fmt.Errorf("cant delete task: %w", err)
 		}
 	} else {
-		now := time.Now().Truncate(24 * time.Hour)
+		now := time.Now().Truncate(TruncateHours * time.Hour) // Изменение: использование константы
 		tsk.Date, err = NextDate(now, tsk.Date, tsk.Repeat)
 		if err != nil {
 			return fmt.Errorf("failed to get next date: %w", ErrFormat)

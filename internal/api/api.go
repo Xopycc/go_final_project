@@ -26,22 +26,23 @@ func (a *Api) TaskCreate(w http.ResponseWriter, r *http.Request) {
 
 	_, err := buf.ReadFrom(r.Body)
 	if err != nil {
-		sendErr(w, err.Error(), http.StatusBadRequest)
+		sendErr(w, "Ошибка при чтении тела запроса", http.StatusBadRequest) // Изменено
 		return
 	}
 
 	var tsk task.Task
 	if err := json.Unmarshal(buf.Bytes(), &tsk); err != nil {
-		sendErr(w, err.Error(), http.StatusBadRequest)
+		sendErr(w, "Ошибка при разборе JSON", http.StatusBadRequest) // Изменено
 		return
 	}
 
 	taskID, err := a.task.Create(tsk)
 	if err != nil {
 		if errors.Is(err, task.ErrFormat) {
-			sendErr(w, err.Error(), http.StatusBadRequest)
+			sendErr(w, "Неверный формат задачи", http.StatusBadRequest) // Изменено
 		} else {
-			sendErr(w, err.Error(), http.StatusInternalServerError)
+			log.Printf("Ошибка при создании задачи: %v", err)                       // Изменено
+			sendErr(w, "Внутренняя ошибка сервера", http.StatusInternalServerError) // Изменено
 		}
 		return
 	}
@@ -81,7 +82,12 @@ func (a *Api) GetTasks(w http.ResponseWriter, r *http.Request) {
 	search := r.FormValue("search")
 	tasks, err := a.task.GetTasks(tsk, search)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		// Регистрирует детализированное сообщение об ошибке внутренне
+		log.Printf("Ошибка при получении задач: %v", err)
+
+		// Отправляет пользователю общую ошибку
+		http.Error(w, "Внутренняя ошибка сервера", http.StatusInternalServerError)
+		return
 	}
 
 	sendTasks(w, tasks)
@@ -102,9 +108,10 @@ func (a *Api) GetTask(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, task.ErrNotFound) {
 			sendErr(w, "Задача не найдена", http.StatusNotFound)
-			return
+		} else {
+			log.Printf("Ошибка при получении задачи: %v", err)                      // Изменено
+			sendErr(w, "Внутренняя ошибка сервера", http.StatusInternalServerError) // Изменено
 		}
-		sendErr(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	sendTask(w, tsk)
@@ -127,9 +134,10 @@ func (a *Api) UpdateTask(w http.ResponseWriter, r *http.Request) {
 	err = a.task.UpdateTask(tsk)
 	if err != nil {
 		if errors.Is(err, task.ErrFormat) {
-			sendErr(w, err.Error(), http.StatusBadRequest)
+			sendErr(w, "Неверный формат задачи", http.StatusBadRequest) // Изменено
 		} else {
-			sendErr(w, err.Error(), http.StatusInternalServerError)
+			log.Printf("Ошибка при обновлении задачи: %v", err)                     // Изменено
+			sendErr(w, "Внутренняя ошибка сервера", http.StatusInternalServerError) // Изменено
 		}
 		return
 	}
@@ -144,7 +152,8 @@ func (a *Api) TaskDone(w http.ResponseWriter, r *http.Request) {
 	}
 	err := a.task.TaskDone(id)
 	if err != nil {
-		sendErr(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("Ошибка при завершении задачи: %v", err)                     // Изменено
+		sendErr(w, "Внутренняя ошибка сервера", http.StatusInternalServerError) // Изменено
 		return
 	}
 	sendOK(w)
@@ -158,7 +167,8 @@ func (a *Api) TaskDelete(w http.ResponseWriter, r *http.Request) {
 	}
 	err := a.task.TaskDelete(id)
 	if err != nil {
-		sendErr(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("Ошибка при удалении задачи: %v", err)                       // Изменено
+		sendErr(w, "Внутренняя ошибка сервера", http.StatusInternalServerError) // Изменено
 		return
 	}
 	sendOK(w)
