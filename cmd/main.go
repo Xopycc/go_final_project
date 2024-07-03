@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	_ "modernc.org/sqlite"
 
@@ -40,16 +41,21 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.Handle("/", http.FileServer(http.Dir(webDir)))
-	// Исправление маршрутов без HTTP метода (GET, POST, и т.д.)
-	mux.HandleFunc("/api/nextdate", api.NextDate)
-	mux.HandleFunc("/api/task", api.TaskCreate)
-	mux.HandleFunc("/api/tasks", api.GetTasks)
-	mux.HandleFunc("/api/task", api.GetTask)
-	mux.HandleFunc("/api/task", api.UpdateTask)
-	mux.HandleFunc("/api/task/done", api.TaskDone)
-	mux.HandleFunc("/api/task", api.TaskDelete)
+	mux.HandleFunc("GET /api/nextdate", api.NextDate)
+	mux.HandleFunc("POST /api/task", api.TaskCreate)
+	mux.HandleFunc("GET /api/tasks", api.GetTasks)
+	mux.HandleFunc("GET /api/task", api.GetTask)
+	mux.HandleFunc("PUT /api/task", api.UpdateTask)
+	mux.HandleFunc("POST /api/task/done", api.TaskDone)
+	mux.HandleFunc("DELETE /api/task", api.TaskDelete)
 
-	log.Printf("Сервер запущен на порту %s\n", cfg.Port)
+	// Добавляем двоеточие перед портом, если оно отсутствует
+	port := cfg.Port
+	if !strings.HasPrefix(port, ":") {
+		port = ":" + port
+	}
 
-	log.Fatal(http.ListenAndServe(cfg.Port, mux))
+	log.Printf("Сервер запущен на порту %s\n", port)
+
+	log.Fatal(http.ListenAndServe(port, mux))
 }
